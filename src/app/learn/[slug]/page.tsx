@@ -316,7 +316,11 @@ export default async function ResourcePage({ params }: Props) {
                 <ProgressPanel resource={resource} initialViewer={viewer} />
               </div>
               <dl className="flex flex-col divide-y divide-border-subtle border-t border-border-subtle text-[0.8125rem]">
-                <Fact icon={<Clock />} label="Duration" value={formatDuration(resource.durationMinutes)} />
+                <Fact
+                  icon={<Clock />}
+                  label={unit === "issue" ? "Read time" : "Duration"}
+                  value={unit === "issue" ? `${resource.durationMinutes} min per issue` : formatDuration(resource.durationMinutes)}
+                />
                 <Fact icon={<Layers />} label={unit === "issue" ? "Issues" : "Lessons"} value={String(resource.lessonCount)} />
                 <Fact icon={<Signal />} label="Level" value={LEVEL_LABEL[resource.level]} />
                 <Fact icon={<MonitorPlay />} label="Format" value={FORMAT_LABEL[resource.format]} />

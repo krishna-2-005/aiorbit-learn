@@ -6,9 +6,9 @@ const columns = [
   {
     title: "Learn",
     links: [
-      { href: "/learn?type=courses", label: "AI Courses" },
-      { href: "/learn?type=guides", label: "AI Guides" },
-      { href: "/learn?type=ebooks", label: "AI eBooks" },
+      { href: "/learn?type=courses", label: "Courses" },
+      { href: "/learn?type=guides", label: "Guides" },
+      { href: "/learn?type=ebooks", label: "eBooks" },
       { href: "/learn?type=tutorials", label: "Tutorials" },
       { href: "/learn?type=newsletters", label: "Newsletters" },
     ],
@@ -18,8 +18,8 @@ const columns = [
     links: [
       { href: "/learn/category/llms", label: "LLMs" },
       { href: "/learn/category/prompt-engineering", label: "Prompt Engineering" },
-      { href: "/learn/category/agents", label: "AI Agents" },
-      { href: "/learn/category/coding", label: "AI for Coding" },
+      { href: "/learn/category/agents", label: "Agents" },
+      { href: "/learn/category/coding", label: "Coding" },
       { href: "/learn/category/image-video", label: "Image & Video" },
     ],
   },

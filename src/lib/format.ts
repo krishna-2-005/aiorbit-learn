@@ -23,6 +23,11 @@ export function formatDuration(minutes: number): string {
   return `${hours}h ${rest}m`;
 }
 
+/** Card/row length: newsletters show one issue's read time, everything else its total duration. */
+export function formatLength(type: string, minutes: number): string {
+  return type === "NEWSLETTER" ? `${minutes} min read` : formatDuration(minutes);
+}
+
 /** "2026-03-12T…" -> "Mar 12, 2026". */
 export function formatDate(iso: string | Date): string {
   return new Intl.DateTimeFormat("en-US", { day: "numeric", month: "short", year: "numeric" }).format(new Date(iso));

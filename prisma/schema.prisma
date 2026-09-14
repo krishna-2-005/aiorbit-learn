@@ -125,7 +125,8 @@ model Resource {
   prerequisites   String[]
   toolsCovered    String[]
   publishedAt     DateTime        @default(now())
-  updatedAt       DateTime        @updatedAt
+  // Content date shown as "Last updated"; counters (views, saves, ratings) must not bump it.
+  updatedAt       DateTime        @default(now())
   providerId      String
   provider        Provider        @relation(fields: [providerId], references: [id])
   authorId        String?

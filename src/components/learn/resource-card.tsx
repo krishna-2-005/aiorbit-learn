@@ -2,7 +2,7 @@ import { ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { LEVEL_LABEL } from "@/lib/constants";
-import { formatCompact, formatDuration, formatRating } from "@/lib/format";
+import { formatCompact, formatLength, formatRating } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { ResourceListItem } from "@/types/learn";
 import { Cover, PricingBadge, ProviderLogo, TypeBadge, VerifiedTick } from "./resource-meta";
@@ -54,7 +54,7 @@ export function ResourceCard({ resource: r, priority, overlay, headingLevel = "h
         <p className="flex flex-wrap items-center gap-x-2 text-xs text-fg-subtle">
           <span>{LEVEL_LABEL[r.level]}</span>
           <Dot />
-          <span>{formatDuration(r.durationMinutes)}</span>
+          <span>{formatLength(r.type, r.durationMinutes)}</span>
           <Dot />
           <span>
             {r.lessonCount} {r.type === "NEWSLETTER" ? "issues" : r.lessonCount === 1 ? "lesson" : "lessons"}

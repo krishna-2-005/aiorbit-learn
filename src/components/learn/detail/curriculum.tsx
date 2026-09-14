@@ -30,7 +30,9 @@ export function Curriculum({ slug, sections, initialViewer, unit }: CurriculumPr
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2 text-[0.8125rem] text-fg-muted">
         <p>
-          {sections.length} sections · {lessonIds.length} {unit}s · {formatDuration(totalMinutes)} total
+          {unit === "issue"
+            ? `${sections.length} recent issues · ${lessonIds.length} stories`
+            : `${sections.length} sections · ${lessonIds.length} lessons · ${formatDuration(totalMinutes)} total`}
         </p>
         <button
           type="button"
@@ -80,7 +82,7 @@ export function Curriculum({ slug, sections, initialViewer, unit }: CurriculumPr
                   <span className="flex min-w-0 flex-1 flex-col">
                     <span className="text-sm font-semibold text-fg">{section.title}</span>
                     <span className="text-xs text-fg-subtle">
-                      {section.lessons.length} {unit}s · {formatDuration(minutes)}
+                      {section.lessons.length} {unit === "issue" ? "stories" : "lessons"} · {unit === "issue" ? `${minutes} min read` : formatDuration(minutes)}
                       {tracking ? ` · ${sectionDone}/${section.lessons.length} done` : ""}
                     </span>
                   </span>

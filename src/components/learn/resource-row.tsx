@@ -1,7 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { LEVEL_LABEL } from "@/lib/constants";
-import { formatDuration } from "@/lib/format";
+import { formatLength } from "@/lib/format";
 import type { ResourceListItem } from "@/types/learn";
 import { Dot, Rating } from "./resource-card";
 import { Cover, PricingBadge, TypeBadge, VerifiedTick } from "./resource-meta";
@@ -37,7 +37,7 @@ export function ResourceRow({ resource: r, priority }: { resource: ResourceListI
           <TypeBadge type={r.type} className="h-5 px-2" />
           <span className="hidden sm:inline">{LEVEL_LABEL[r.level]}</span>
           <span className="hidden sm:inline-flex"><Dot /></span>
-          <span>{formatDuration(r.durationMinutes)}</span>
+          <span>{formatLength(r.type, r.durationMinutes)}</span>
           <Rating value={r.ratingAvg} count={r.ratingCount} className="sm:hidden" />
         </div>
       </div>

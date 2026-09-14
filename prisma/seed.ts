@@ -81,6 +81,25 @@ function daysAgo(days: number): Date {
   return new Date(NOW.getTime() - days * DAY_MS - int(0, 23 * 60) * 60 * 1000);
 }
 
+/** Maps a 0–540 day spread onto the last year: nothing newer than two weeks, most 6–12 months old. */
+function spreadAgo(ago: number): number {
+  return 14 + Math.round((Math.min(ago, 540) / 540) * (365 - 14));
+}
+
+/** Fixes "a AI" / "a ebook" style slips that templates produce. */
+function fixArticles(text: string): string {
+  return text
+    .replace(/\b([Aa]) (?=AI\b|[AEIOaeio])(?!one\b|once\b)/g, (_m, a: string) => a + "n ")
+    .replace(/\bebook\b/g, "eBook");
+}
+
+/** "Last updated" sits between publishing and a few days ago, never today. */
+function updatedAtFor(publishedAt: Date): Date {
+  const from = publishedAt.getTime();
+  const to = Math.max(from, NOW.getTime() - 3 * DAY_MS);
+  return new Date(from + (to - from) * (0.35 + 0.65 * Math.random()));
+}
+
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
@@ -1421,10 +1440,11 @@ interface SectionDraft {
 
 const LESSON_SHAPE: Record<ResourceType, { sections: [number, number]; lessons: [number, number]; perLesson: [number, number]; total: [number, number] }> = {
   COURSE: { sections: [3, 6], lessons: [3, 8], perLesson: [6, 70], total: [120, 3000] },
-  GUIDE: { sections: [3, 6], lessons: [3, 6], perLesson: [2, 12], total: [20, 240] },
+  GUIDE: { sections: [2, 4], lessons: [2, 3], perLesson: [4, 15], total: [20, 150] },
   EBOOK: { sections: [3, 6], lessons: [3, 8], perLesson: [5, 40], total: [90, 600] },
   TUTORIAL: { sections: [3, 5], lessons: [3, 6], perLesson: [2, 12], total: [15, 180] },
-  NEWSLETTER: { sections: [2, 3], lessons: [3, 4], perLesson: [1, 2], total: [5, 15] },
+  // Newsletters: sections are issues, lessons are stories; totals are summed over all issues.
+  NEWSLETTER: { sections: [3, 4], lessons: [3, 4], perLesson: [2, 3], total: [21, 44] },
 };
 
 const LESSON_TEMPLATES: Array<(c: string) => string> = [
@@ -1525,6 +1545,8 @@ function buildSyllabus(type: ResourceType, cat: CategorySeed, tools: string[]): 
   });
 
   const durationMinutes = sections.reduce((acc, sec) => acc + sec.lessons.reduce((a, les) => a + les.durationMinutes, 0), 0);
+  // A newsletter is listed by issue count and the read time of one issue.
+  if (type === "NEWSLETTER") return { sections, lessonCount: sections.length, durationMinutes: Math.round(durationMinutes / sections.length) };
   return { sections, lessonCount, durationMinutes };
 }
 
@@ -1677,7 +1699,7 @@ async function main(): Promise<void> {
   // Resource specs -------------------------------------------------------------
   const specs: ResourceSpec[] = HAND_WRITTEN.map((h) => {
     const { daysAgo: ago, ...rest } = h;
-    return { ...rest, language: "en", publishedAt: daysAgo(ago), status: "PUBLISHED" as const };
+    return { ...rest, language: "en", publishedAt: daysAgo(spreadAgo(ago)), status: "PUBLISHED" as const };
   });
 
   const generatedPlan: Array<[ResourceType, number]> = [
@@ -1693,7 +1715,7 @@ async function main(): Promise<void> {
     for (let i = 0; i < count; i += 1) {
       const cat = must(categoryOrder[genIndex % categoryOrder.length], "category order");
       const ago = genIndex % 10 === 3 ? int(0, 6) : int(0, 540);
-      specs.push(generateSpec(type, cat, daysAgo(ago), "PUBLISHED"));
+      specs.push(generateSpec(type, cat, daysAgo(spreadAgo(ago)), "PUBLISHED"));
       genIndex += 1;
     }
   }
@@ -1712,10 +1734,12 @@ async function main(): Promise<void> {
   }
   const created: CreatedResource[] = [];
 
+  const updatedAtById = new Map<string, Date>();
   for (const spec of specs) {
     const cat = categoryBySlug(spec.categorySlug);
     const provider = must(providers.get(spec.providerSlug), `provider ${spec.providerSlug}`);
-    const slug = uniqueSlug(spec.title);
+    const slug = uniqueSlug(fixArticles(spec.title));
+    const updatedAt = updatedAtFor(spec.publishedAt);
     const domain = provider.websiteUrl.replace(/^https:\/\//, "");
     const host = domain.split(".").length === 2 ? `www.${domain}` : domain;
     const externalUrl = spec.externalUrl ?? `https://${host}/${URL_PATH[spec.type]}/${slug}`;
@@ -1725,9 +1749,9 @@ async function main(): Promise<void> {
     const resource = await prisma.resource.create({
       data: {
         slug,
-        title: spec.title,
-        tagline: spec.tagline,
-        description: spec.description,
+        title: fixArticles(spec.title),
+        tagline: fixArticles(spec.tagline),
+        description: fixArticles(spec.description),
         coverUrl: `https://picsum.photos/seed/${slug}/800/450`,
         externalUrl,
         type: spec.type,
@@ -1741,11 +1765,12 @@ async function main(): Promise<void> {
         hasCertificate: spec.hasCertificate,
         status: spec.status,
         featured: spec.featured,
-        faqs: faqs as unknown as Prisma.InputJsonValue,
-        learnOutcomes: spec.learnOutcomes,
+        faqs: faqs.map((f) => ({ question: fixArticles(f.question), answer: fixArticles(f.answer) })) as unknown as Prisma.InputJsonValue,
+        learnOutcomes: spec.learnOutcomes.map(fixArticles),
         prerequisites: spec.prerequisites,
         toolsCovered: spec.toolsCovered,
         publishedAt: spec.publishedAt,
+        updatedAt,
         provider: { connect: { id: provider.id } },
         category: { connect: { id: must(categories.get(spec.categorySlug), `category ${spec.categorySlug}`) } },
         ...(spec.authorSlug ? { author: { connect: { id: must(authors.get(spec.authorSlug), `author ${spec.authorSlug}`) } } } : {}),
@@ -1753,9 +1778,9 @@ async function main(): Promise<void> {
         tags: { connect: spec.tags.map((t) => ({ slug: t })) },
         sections: {
           create: syllabus.sections.map((s) => ({
-            title: s.title,
+            title: fixArticles(s.title),
             order: s.order,
-            lessons: { createMany: { data: s.lessons } },
+            lessons: { createMany: { data: s.lessons.map((l) => ({ ...l, title: fixArticles(l.title) })) } },
           })),
         },
       },
@@ -1766,8 +1791,9 @@ async function main(): Promise<void> {
     });
 
     const lessonIds = resource.sections.flatMap((s) => s.lessons.map((l) => l.id));
-    if (lessonIds.length !== syllabus.lessonCount) throw new Error(`Lesson count mismatch for ${slug}`);
+    if (spec.type !== "NEWSLETTER" && lessonIds.length !== syllabus.lessonCount) throw new Error(`Lesson count mismatch for ${slug}`);
     created.push({ id: resource.id, spec, lessonIds });
+    updatedAtById.set(resource.id, updatedAt);
   }
 
   const published = created.filter((r) => r.spec.status === "PUBLISHED");
@@ -1779,8 +1805,9 @@ async function main(): Promise<void> {
   const saves = new Map<string, number>();
 
   const randomDateAfter = (from: Date): Date => {
-    const fromMs = Math.min(from.getTime(), NOW.getTime() - 60 * 1000);
-    return faker.date.between({ from: fromMs, to: NOW.getTime() });
+    const toMs = NOW.getTime() - 2 * DAY_MS;
+    const fromMs = Math.min(from.getTime() + DAY_MS, toMs - DAY_MS);
+    return faker.date.between({ from: fromMs, to: toMs });
   };
 
   for (const r of published) {
@@ -1823,10 +1850,11 @@ async function main(): Promise<void> {
       status: "STARTED",
       completedLessonIds: r.lessonIds.slice(0, done),
       percent: Math.round((done / total) * 100),
+      updatedAt: daysAgo(int(2, 20)),
     });
   }
   for (const r of demoCompleted) {
-    progressRows.push({ userId: demo.id, resourceId: r.id, status: "COMPLETED", completedLessonIds: [...r.lessonIds], percent: 100 });
+    progressRows.push({ userId: demo.id, resourceId: r.id, status: "COMPLETED", completedLessonIds: [...r.lessonIds], percent: 100, updatedAt: daysAgo(int(10, 90)) });
   }
 
   const demoReviewTarget = must(demoCompleted[0], "demo review target");
@@ -1857,7 +1885,7 @@ async function main(): Promise<void> {
       const trendingScore = round2(saveCount * 3 + viewCount / 100 + recencyBonus);
       return prisma.resource.update({
         where: { id: r.id },
-        data: { ratingAvg, ratingCount, saveCount, viewCount, trendingScore },
+        data: { ratingAvg, ratingCount, saveCount, viewCount, trendingScore, updatedAt: must(updatedAtById.get(r.id), "updatedAt") },
       });
     }),
   );

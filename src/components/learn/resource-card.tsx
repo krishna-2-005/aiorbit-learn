@@ -23,7 +23,7 @@ export function ResourceCard({ resource: r, priority, overlay, headingLevel = "h
     <article className="group relative flex flex-col overflow-hidden rounded-card border border-border bg-card transition-[border-color,transform,background-color] duration-200 hover:-translate-y-0.5 hover:border-border-strong hover:bg-raised has-focus-visible:border-accent-fg">
       <div className="relative">
         <Cover
-          src={r.coverUrl}
+          subject={r}
           alt=""
           sizes="(min-width: 1440px) 340px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           priority={priority}

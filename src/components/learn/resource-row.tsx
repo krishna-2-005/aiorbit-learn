@@ -12,9 +12,10 @@ export function ResourceRow({ resource: r, priority }: { resource: ResourceListI
   return (
     <li className="group relative flex items-center gap-4 border-b border-border-subtle px-3 py-3 transition-colors last:border-b-0 hover:bg-raised has-focus-visible:bg-raised sm:px-4">
       <Cover
-        src={r.coverUrl}
+        subject={r}
         alt=""
         sizes="160px"
+        compact
         priority={priority}
         className="w-24 shrink-0 rounded-control border border-border sm:w-40"
         imageClassName="transition-transform duration-300 group-hover:scale-[1.03]"

@@ -1,0 +1,23 @@
+# Local Postgres for development. Production uses Neon.
+# Start with: docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: aiorbit-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: aiorbit
+      POSTGRES_PASSWORD: aiorbit
+      POSTGRES_DB: aiorbit
+    ports:
+      - "5434:5432"
+    volumes:
+      - aiorbit-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aiorbit"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  aiorbit-db:

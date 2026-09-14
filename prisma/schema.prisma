@@ -1,0 +1,210 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum ResourceType {
+  COURSE
+  GUIDE
+  EBOOK
+  TUTORIAL
+  NEWSLETTER
+}
+
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum Pricing {
+  FREE
+  PAID
+  FREEMIUM
+}
+
+enum Format {
+  VIDEO
+  TEXT
+  INTERACTIVE
+  PDF
+}
+
+enum ResourceStatus {
+  PUBLISHED
+  PENDING
+  REJECTED
+}
+
+enum ProgressStatus {
+  STARTED
+  COMPLETED
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique
+  passwordHash String
+  name         String
+  avatarUrl    String?
+  createdAt    DateTime        @default(now())
+  saved        SavedResource[]
+  progress     Progress[]
+  reviews      Review[]
+  submissions  Resource[]      @relation("Submissions")
+}
+
+model Provider {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  logoUrl     String
+  websiteUrl  String
+  description String
+  verified    Boolean    @default(false)
+  resources   Resource[]
+}
+
+model Author {
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  name      String
+  avatarUrl String
+  bio       String
+  socialUrl String?
+  resources Resource[]
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  description String
+  icon        String
+  resources   Resource[]
+}
+
+model Tag {
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  name      String
+  resources Resource[]
+}
+
+model Resource {
+  id              String          @id @default(cuid())
+  slug            String          @unique
+  title           String
+  tagline         String
+  description     String          @db.Text
+  coverUrl        String
+  externalUrl     String
+  type            ResourceType
+  level           Level
+  pricing         Pricing
+  priceUsd        Decimal?        @db.Decimal(8, 2)
+  format          Format
+  durationMinutes Int
+  lessonCount     Int
+  language        String          @default("en")
+  hasCertificate  Boolean         @default(false)
+  status          ResourceStatus  @default(PUBLISHED)
+  featured        Boolean         @default(false)
+  ratingAvg       Float           @default(0)
+  ratingCount     Int             @default(0)
+  saveCount       Int             @default(0)
+  viewCount       Int             @default(0)
+  trendingScore   Float           @default(0)
+  faqs            Json?
+  learnOutcomes   String[]
+  prerequisites   String[]
+  toolsCovered    String[]
+  publishedAt     DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  providerId      String
+  provider        Provider        @relation(fields: [providerId], references: [id])
+  authorId        String?
+  author          Author?         @relation(fields: [authorId], references: [id])
+  categoryId      String
+  category        Category        @relation(fields: [categoryId], references: [id])
+  submittedById   String?
+  submittedBy     User?           @relation("Submissions", fields: [submittedById], references: [id], onDelete: SetNull)
+  tags            Tag[]
+  sections        Section[]
+  reviews         Review[]
+  saved           SavedResource[]
+  progress        Progress[]
+
+  @@index([type, status])
+  @@index([categoryId])
+  @@index([ratingAvg])
+  @@index([publishedAt])
+  @@index([providerId])
+}
+
+model Section {
+  id         String   @id @default(cuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  title      String
+  order      Int
+  lessons    Lesson[]
+
+  @@index([resourceId, order])
+}
+
+model Lesson {
+  id              String  @id @default(cuid())
+  sectionId       String
+  section         Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  title           String
+  order           Int
+  durationMinutes Int
+  isPreview       Boolean @default(false)
+  url             String?
+
+  @@index([sectionId, order])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating     Int
+  title      String
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@unique([resourceId, userId])
+  @@index([resourceId, createdAt])
+}
+
+model SavedResource {
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resourceId String
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@id([userId, resourceId])
+}
+
+model Progress {
+  userId             String
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resourceId         String
+  resource           Resource       @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  status             ProgressStatus @default(STARTED)
+  completedLessonIds String[]
+  percent            Int            @default(0)
+  updatedAt          DateTime       @updatedAt
+
+  @@id([userId, resourceId])
+}

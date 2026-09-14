@@ -4,7 +4,7 @@ A full-stack **Learn** module for [AI Orbit](https://aiorbit.club): a hub of AI 
 tutorials and newsletters that you can browse, filter, save, track progress on and review. It is built to look
 and feel like AI Orbit itself.
 
-- **Live:** _deployment link — see [Deploy](#deploy)_
+- **Live:** https://aiorbit-learn-nine.vercel.app/learn
 - **Repo:** https://github.com/krishna-2-005/aiorbit-learn
 - **Demo login:** `demo@aiorbit.dev` / `password123` (has saved, in-progress and completed resources)
 

@@ -81,9 +81,9 @@ function daysAgo(days: number): Date {
   return new Date(NOW.getTime() - days * DAY_MS - int(0, 23 * 60) * 60 * 1000);
 }
 
-/** Maps a 0–540 day spread onto the last year: nothing newer than two weeks, most 6–12 months old. */
+/** Maps a 0–540 day spread onto the last year: nothing newer than six weeks, most 6–12 months old. */
 function spreadAgo(ago: number): number {
-  return 14 + Math.round((Math.min(ago, 540) / 540) * (365 - 14));
+  return 45 + Math.round((Math.min(ago, 540) / 540) * (365 - 45));
 }
 
 /** Fixes "a AI" / "a ebook" style slips that templates produce. */
@@ -96,8 +96,8 @@ function fixArticles(text: string): string {
 /** "Last updated" sits between publishing and a few days ago, never today. */
 function updatedAtFor(publishedAt: Date): Date {
   const from = publishedAt.getTime();
-  const to = Math.max(from, NOW.getTime() - 3 * DAY_MS);
-  return new Date(from + (to - from) * (0.35 + 0.65 * Math.random()));
+  const to = Math.max(from, NOW.getTime() - 21 * DAY_MS);
+  return new Date(from + (to - from) * (0.15 + 0.5 * Math.random()));
 }
 
 function round2(n: number): number {
@@ -1805,9 +1805,11 @@ async function main(): Promise<void> {
   const saves = new Map<string, number>();
 
   const randomDateAfter = (from: Date): Date => {
-    const toMs = NOW.getTime() - 2 * DAY_MS;
+    // Most reviews land in the months after launch, a few are recent.
+    const toMs = NOW.getTime() - 4 * DAY_MS;
     const fromMs = Math.min(from.getTime() + DAY_MS, toMs - DAY_MS);
-    return faker.date.between({ from: fromMs, to: toMs });
+    const t = faker.number.float({ min: 0, max: 1 }) ** 2.4;
+    return new Date(fromMs + (toMs - fromMs) * t);
   };
 
   for (const r of published) {

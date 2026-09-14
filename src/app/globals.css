@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/*
+ * AI Orbit design tokens, measured from aiorbit.club with scripts/inspect-aiorbit.mjs
+ * (see docs/DESIGN.md). Dark only. Components use these tokens, never raw hex.
+ */
+:root {
+  color-scheme: dark;
+
+  --bg: #000000; /* body background */
+  --surface: #0d0d10; /* pills, inputs, chips */
+  --surface-card: #131316; /* cards, panels */
+  --surface-raised: #18181c; /* table rows, hover fills */
+  --surface-hover: #1c1c21;
+  --border: #232326; /* card and control borders */
+  --border-subtle: rgba(35, 35, 40, 0.6); /* row dividers */
+  --border-strong: #3f3f46; /* hover border */
+  --fg: #ffffff;
+  --fg-soft: #e4e4e7;
+  --fg-muted: #a1a1aa;
+  --fg-subtle: #71717a;
+  --accent: #6e56cf; /* Submit Tool purple */
+  --accent-hover: #7d67d6;
+  --accent-fg: #b4a5f5; /* purple text that passes 4.5:1 on black */
+  --accent-soft: rgba(110, 86, 207, 0.14);
+
+  /* Filter-pill tints used by AI Orbit (Trending, Popular, New, Free, Top rated). */
+  --tint-orange: #ff6b4a;
+  --tint-gold: #ffc53d;
+  --tint-violet: #a78bfa;
+  --tint-green: #34d399;
+  --tint-sky: #38bdf8;
+  --danger: #f87171;
+
+  --shadow-float: 0 16px 48px rgba(0, 0, 0, 0.6);
+}
+
+@theme {
+  --color-*: initial;
+  --shadow-*: initial;
+  --inset-shadow-*: initial;
+  --drop-shadow-*: initial;
+  --text-shadow-*: initial;
+  --radius-*: initial;
+  --font-*: initial;
+
+  --radius-sm: 4px;
+  --radius-control: 10px;
+  --radius-card: 12px;
+  --radius-panel: 16px;
+  --radius-full: 9999px;
+
+  --breakpoint-3xl: 90rem;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--surface-card);
+  --color-raised: var(--surface-raised);
+  --color-hover: var(--surface-hover);
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-fg-soft: var(--fg-soft);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-orange: var(--tint-orange);
+  --color-gold: var(--tint-gold);
+  --color-violet: var(--tint-violet);
+  --color-green: var(--tint-green);
+  --color-sky: var(--tint-sky);
+  --color-danger: var(--danger);
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-transparent: transparent;
+
+  --shadow-float: var(--shadow-float);
+
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--border);
+  }
+
+  html {
+    background-color: var(--bg);
+    color: var(--fg);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background-color: var(--accent);
+    color: var(--fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-fg);
+    outline-offset: 2px;
+  }
+
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  label[for],
+  select {
+    cursor: pointer;
+  }
+
+  /* Native dialogs sit on the black page; keep their backdrop dark and blurred. */
+  dialog::backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+  }
+}
+
+@layer utilities {
+  /* AI Orbit hero glow: a faint warm radial behind the headline. */
+  .hero-glow {
+    background-image:
+      radial-gradient(60% 120% at 50% 0%, rgba(245, 166, 35, 0.07), transparent 70%),
+      radial-gradient(40% 80% at 50% 0%, rgba(110, 86, 207, 0.08), transparent 70%);
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 200ms ease-out both;
+}
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-card) 25%, var(--surface-hover) 50%, var(--surface-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -18,7 +18,7 @@
   --fg: #ffffff;
   --fg-soft: #e4e4e7;
   --fg-muted: #a1a1aa;
-  --fg-subtle: #71717a;
+  --fg-subtle: #8b8b94; /* zinc-500 (#71717a) lifted to pass 4.5:1 on cards */
   --accent: #6e56cf; /* Submit Tool purple */
   --accent-hover: #7d67d6;
   --accent-fg: #b4a5f5; /* purple text that passes 4.5:1 on black */

@@ -20,7 +20,7 @@ All values below were measured from the live site with `node scripts/inspect-aio
 | Hover border | zinc-700 `#3f3f46` | `--border-strong` |
 | Primary text | `#ffffff` | `--fg` |
 | Secondary text | zinc-400 `#a1a1aa` (924 uses on /tools) | `--fg-muted` |
-| Tertiary text | zinc-500 `#71717a` | `--fg-subtle` |
+| Tertiary text | zinc-500 `#71717a`, lifted to `#8b8b94` for 4.5:1 contrast on cards | `--fg-subtle` |
 | Accent ("Submit Tool") | `rgb(110,86,207)` `#6e56cf` | `--accent` |
 | Accent text | lighter violet for 4.5:1 on black | `--accent-fg` |
 | Filter pill tints | orange `#ff6b4a`, gold `#ffc53d`, violet `#a78bfa`, green `#34d399`, sky `#38bdf8` at 25% border | `--tint-*` |
@@ -59,6 +59,7 @@ All values below were measured from the live site with `node scripts/inspect-aio
 ## Small improvements (theme unchanged)
 
 - Grid view of resource cards with 16:9 covers (AI Orbit only has the table) — same card fill, border and radius.
-- Subtle gradient placeholder behind covers while images load.
+- Generated "orbit" cover art (category icon, concentric rings, dotted grid, tinted glow) instead of random stock photos — built only from the tint tokens.
 - Hover lift and border brighten on cards; purple focus ring for keyboard users.
 - Shimmer skeletons that mirror the exact card and row geometry.
+- Tertiary grey lifted from `#71717a` to `#8b8b94` so small meta text passes WCAG AA on `#131316` cards.

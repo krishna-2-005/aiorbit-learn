@@ -141,11 +141,11 @@ export function LearnExplorer({ hero, initial, providers, featured, lockedCatego
           ) : null}
 
           <div className="flex items-center gap-2">
-            <div className="hidden flex-wrap items-center gap-2 md:flex">{menus}</div>
+            <div className="hidden flex-wrap items-center gap-2 lg:flex">{menus}</div>
             <Button
               variant="secondary"
               size="sm"
-              className="md:hidden"
+              className="lg:hidden"
               icon={<SlidersHorizontal aria-hidden />}
               onClick={() => setDrawerOpen(true)}
             >
